@@ -1,18 +1,543 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="موقع الأذكار الإسلامي - أذكار الصباح والمساء مع عداد تفاعلي" />
-    <meta name="keywords" content="أذكار, الصباح, المساء, إسلامي, دعاء, ذكر الله" />
-    <meta name="author" content="dhikrkhir.com" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أذكار الصباح والمساء - dhikrkhir.com</title>
-    <script type="module" crossorigin src="/assets/index-DPa8aSmK.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BUkR-KEj.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* الوضع الفاتح - أذكار الصباح */
+        body.morning {
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            color: #2c3e50;
+        }
+
+        /* الوضع الداكن - أذكار المساء */
+        body.evening {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        .toggle-btn.morning {
+            background: #27ae60;
+            color: white;
+        }
+
+        .toggle-btn.evening {
+            background: #3498db;
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .toggle-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: rgba(255,255,255,0.8);
+            height: 20px;
+            border-radius: 7px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .dhikr-card {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        body.evening .dhikr-card {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .dhikr-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .dhikr-number {
+            background: #27ae60;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+
+        body.evening .dhikr-number {
+            background: #3498db;
+        }
+
+        .dhikr-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .dhikr-source {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .dhikr-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .count-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        body.evening .count-btn {
+            background: #3498db;
+        }
+
+        .count-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .count-display {
+            background: rgba(255,255,255,0.8);
+            color: #2c3e50;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+
+        .visitor-count {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .completion-message {
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .dhikr-card {
+                padding: 20px;
+            }
+            
+            .dhikr-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="morning">
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">أذكار الصباح</h1>
+            <p class="subtitle">بسم الله نبدأ</p>
+            
+            <div class="toggle-buttons">
+                <button class="toggle-btn morning active" onclick="switchMode('morning')">
+                    🌅 أذكار الصباح
+                </button>
+                <button class="toggle-btn evening" onclick="switchMode('evening')">
+                    🌙 أذكار المساء
+                </button>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">
+                    0/24 (0%)
+                </div>
+            </div>
+        </div>
+
+        <div class="completion-message" id="completionMessage">
+            🎉 بارك الله فيك! لقد أتممت جميع الأذكار 🎉
+        </div>
+
+        <div id="dhikrContainer">
+            <!-- سيتم إدراج الأذكار هنا بواسطة JavaScript -->
+        </div>
+
+        <div class="footer">
+            <p>تقبل الله منا ومنكم صالح الأعمال</p>
+            <button onclick="resetAllCounts()" class="reset-btn" style="margin-top: 10px; padding: 10px 20px;">
+                إعادة تعيين جميع الأذكار
+            </button>
+            <div class="visitor-count">
+                عدد زوار الموقع<br>
+                👥 <span id="visitorCount">1730</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الأذكار
+        const dhikrData = {
+            morning: [
+                {
+                    id: 1,
+                    text: "آية الكرسي: {الله لا إله إلا هو الحي القيوم لا تأخذه سنة ولا نوم له ما في السماوات وما في الأرض من ذا الذي يشفع عنده إلا بإذنه يعلم ما بين أيديهم وما خلفهم ولا يحيطون بشيء من علمه إلا بما شاء وسع كرسيه السماوات والأرض ولا يؤده حفظهما وهو العلي العظيم}",
+                    source: "البقرة:255، رواه الحاكم وابن حبان.",
+                    count: 1
+                },
+                {
+                    id: 2,
+                    text: "أصبحنا على فطرة الإسلام وكلمة الإخلاص، ودين نبينا محمد صلى الله عليه وسلم، وملة أبينا إبراهيم، حنيفا مسلما، وما كان من المشركين.",
+                    source: "رواه أحمد.",
+                    count: 1
+                },
+                {
+                    id: 3,
+                    text: "رضيت بالله ربا، وبالإسلام دينا، وبمحمد صلى الله عليه وسلم نبيا.",
+                    source: "(ثلاث مرات). رواه أصحاب السنن.",
+                    count: 3
+                },
+                {
+                    id: 4,
+                    text: "اللهم إني أسألك علما نافعا، ورزقا طيبا، وعملا متقبلا.",
+                    source: "رواه ابن ماجه.",
+                    count: 1
+                },
+                {
+                    id: 5,
+                    text: "اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت، وإليك النشور.",
+                    source: "رواه أصحاب السنن عدا النسائي.",
+                    count: 1
+                }
+            ],
+            evening: [
+                {
+                    id: 1,
+                    text: "آية الكرسي: {الله لا إله إلا هو الحي القيوم لا تأخذه سنة ولا نوم له ما في السماوات وما في الأرض من ذا الذي يشفع عنده إلا بإذنه يعلم ما بين أيديهم وما خلفهم ولا يحيطون بشيء من علمه إلا بما شاء وسع كرسيه السماوات والأرض ولا يؤده حفظهما وهو العلي العظيم}",
+                    source: "البقرة:255، رواه الحاكم وابن حبان.",
+                    count: 1
+                },
+                {
+                    id: 2,
+                    text: "أمسينا على فطرة الإسلام وكلمة الإخلاص، ودين نبينا محمد صلى الله عليه وسلم، وملة أبينا إبراهيم، حنيفا مسلما، وما كان من المشركين.",
+                    source: "رواه أحمد.",
+                    count: 1
+                },
+                {
+                    id: 3,
+                    text: "رضيت بالله ربا، وبالإسلام دينا، وبمحمد صلى الله عليه وسلم نبيا.",
+                    source: "(ثلاث مرات). رواه أصحاب السنن.",
+                    count: 3
+                },
+                {
+                    id: 4,
+                    text: "اللهم بك أمسينا، وبك أصبحنا، وبك نحيا، وبك نموت، وإليك المصير.",
+                    source: "رواه أصحاب السنن عدا النسائي.",
+                    count: 1
+                },
+                {
+                    id: 5,
+                    text: "أمسينا وأمسى الملك لله، والحمد لله ولا إله إلا الله وحده لا شريك له، له الملك وله الحمد، وهو على كل شيء قدير، أسألك خير ما في هذه الليلة، وخير ما بعدها، وأعوذ بك من شر هذه الليلة، وشر ما بعدها.",
+                    source: "رواه مسلم.",
+                    count: 1
+                }
+            ]
+        };
+
+        let currentMode = 'morning';
+        let dhikrCounts = {};
+
+        // تحميل البيانات المحفوظة
+        function loadData() {
+            const savedCounts = localStorage.getItem('dhikr_counts');
+            if (savedCounts) {
+                dhikrCounts = JSON.parse(savedCounts);
+            }
+
+            const savedMode = localStorage.getItem('dhikr_mode');
+            if (savedMode) {
+                currentMode = savedMode;
+                switchMode(currentMode);
+            }
+
+            // تحديث عداد الزوار
+            let visitorCount = localStorage.getItem('dhikr_visitors') || '1729';
+            visitorCount = parseInt(visitorCount) + 1;
+            localStorage.setItem('dhikr_visitors', visitorCount.toString());
+            document.getElementById('visitorCount').textContent = visitorCount.toLocaleString('ar-EG');
+        }
+
+        // حفظ البيانات
+        function saveData() {
+            localStorage.setItem('dhikr_counts', JSON.stringify(dhikrCounts));
+            localStorage.setItem('dhikr_mode', currentMode);
+        }
+
+        // تبديل الوضع
+        function switchMode(mode) {
+            currentMode = mode;
+            document.body.className = mode;
+            
+            // تحديث العنوان
+            const title = document.querySelector('.main-title');
+            title.textContent = mode === 'morning' ? 'أذكار الصباح' : 'أذكار المساء';
+            
+            // تحديث الأزرار
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.toggle-btn.${mode}`).classList.add('active');
+            
+            renderDhikr();
+            saveData();
+        }
+
+        // عرض الأذكار
+        function renderDhikr() {
+            const container = document.getElementById('dhikrContainer');
+            const dhikrList = dhikrData[currentMode];
+            
+            container.innerHTML = dhikrList.map(dhikr => {
+                const currentCount = dhikrCounts[`${currentMode}_${dhikr.id}`] || 0;
+                return `
+                    <div class="dhikr-card">
+                        <div class="dhikr-number">${dhikr.id}</div>
+                        <div class="dhikr-text">${dhikr.text}</div>
+                        <div class="dhikr-source">${dhikr.source}</div>
+                        <div class="dhikr-controls">
+                            <button class="count-btn" onclick="incrementCount('${currentMode}_${dhikr.id}')">
+                                عدد المرات
+                            </button>
+                            <div class="count-display">
+                                ${currentCount}/${dhikr.count}
+                            </div>
+                            <button class="reset-btn" onclick="resetCount('${currentMode}_${dhikr.id}')">
+                                إعادة
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateProgress();
+        }
+
+        // زيادة العداد
+        function incrementCount(dhikrId) {
+            const dhikr = getCurrentDhikr(dhikrId);
+            if (!dhikr) return;
+            
+            const currentCount = dhikrCounts[dhikrId] || 0;
+            if (currentCount < dhikr.count) {
+                dhikrCounts[dhikrId] = currentCount + 1;
+                renderDhikr();
+                saveData();
+                
+                // التحقق من اكتمال جميع الأذكار
+                if (isAllCompleted()) {
+                    showCompletionMessage();
+                }
+            }
+        }
+
+        // إعادة تعيين عداد واحد
+        function resetCount(dhikrId) {
+            dhikrCounts[dhikrId] = 0;
+            renderDhikr();
+            saveData();
+            hideCompletionMessage();
+        }
+
+        // إعادة تعيين جميع العدادات
+        function resetAllCounts() {
+            if (confirm('هل أنت متأكد من إعادة تعيين جميع الأذكار؟')) {
+                dhikrCounts = {};
+                renderDhikr();
+                saveData();
+                hideCompletionMessage();
+            }
+        }
+
+        // الحصول على الذكر الحالي
+        function getCurrentDhikr(dhikrId) {
+            const [mode, id] = dhikrId.split('_');
+            return dhikrData[mode].find(d => d.id == id);
+        }
+
+        // تحديث شريط التقدم
+        function updateProgress() {
+            const dhikrList = dhikrData[currentMode];
+            let completed = 0;
+            let total = 0;
+            
+            dhikrList.forEach(dhikr => {
+                const currentCount = dhikrCounts[`${currentMode}_${dhikr.id}`] || 0;
+                completed += Math.min(currentCount, dhikr.count);
+                total += dhikr.count;
+            });
+            
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${percentage}%`;
+            progressFill.textContent = `${completed}/${total} (${percentage}%)`;
+        }
+
+        // التحقق من اكتمال جميع الأذكار
+        function isAllCompleted() {
+            const dhikrList = dhikrData[currentMode];
+            return dhikrList.every(dhikr => {
+                const currentCount = dhikrCounts[`${currentMode}_${dhikr.id}`] || 0;
+                return currentCount >= dhikr.count;
+            });
+        }
+
+        // عرض رسالة الإكمال
+        function showCompletionMessage() {
+            document.getElementById('completionMessage').style.display = 'block';
+        }
+
+        // إخفاء رسالة الإكمال
+        function hideCompletionMessage() {
+            document.getElementById('completionMessage').style.display = 'none';
+        }
+
+        // تحميل البيانات عند بدء التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            renderDhikr();
+        });
+    </script>
+</body>
 </html>
 
