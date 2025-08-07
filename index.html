@@ -213,6 +213,42 @@
             backdrop-filter: blur(10px);
         }
 
+        .reset-container {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .completion-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: none;
+        }
+
         .beta-notice {
             background: rgba(255, 193, 7, 0.2);
             border: 2px solid #ffc107;
@@ -270,6 +306,15 @@
 
         <div class="dhikr-grid" id="dhikr-container">
             <!-- سيتم ملء الأذكار هنا بواسطة JavaScript -->
+        </div>
+
+        <div class="completion-message" id="completion-message">
+            🎉 مبروك! لقد أكملت جميع الأذكار بنجاح! 🎉<br>
+            جعلها الله في ميزان حسناتك
+        </div>
+
+        <div class="reset-container" id="reset-container">
+            <button class="reset-btn" onclick="resetAllCounters()">🔄 إعادة الأذكار</button>
         </div>
 
         <div class="visitor-counter">
@@ -758,6 +803,18 @@
             
             document.getElementById('progress-bar').style.width = percentage + '%';
             document.getElementById('progress-text').textContent = `${completedCount}/${totalCount} (${percentage}%)`;
+            
+            // إظهار رسالة الإكمال وزر الإعادة عند إكمال جميع الأذكار
+            const completionMessage = document.getElementById('completion-message');
+            const resetContainer = document.getElementById('reset-container');
+            
+            if (completedCount === totalCount && totalCount > 0) {
+                completionMessage.style.display = 'block';
+                resetContainer.style.display = 'block';
+            } else {
+                completionMessage.style.display = 'none';
+                resetContainer.style.display = 'none';
+            }
         }
 
         // عرض الأذكار
@@ -902,6 +959,38 @@
                 } else {
                     alert('المتصفح لا يدعم الإشعارات');
                 }
+            }
+        }
+
+        // إعادة تعيين جميع العدادات
+        function resetAllCounters() {
+            if (confirm('هل أنت متأكد من إعادة تعيين جميع الأذكار؟')) {
+                // إعادة تعيين العدادات حسب الوضع الحالي
+                if (currentMode === 'morning') {
+                    morningDhikr.forEach(dhikr => {
+                        dhikr.currentCount = 0;
+                        dhikr.completed = false;
+                    });
+                } else if (currentMode === 'evening') {
+                    eveningDhikr.forEach(dhikr => {
+                        dhikr.currentCount = 0;
+                        dhikr.completed = false;
+                    });
+                } else if (currentMode === 'sleep') {
+                    sleepDhikr.forEach(dhikr => {
+                        dhikr.currentCount = 0;
+                        dhikr.completed = false;
+                    });
+                }
+                
+                // حفظ التقدم وتحديث العرض
+                saveProgress();
+                displayDhikr();
+                updateProgress();
+                
+                // إخفاء رسالة الإكمال وزر الإعادة
+                document.getElementById('completion-message').style.display = 'none';
+                document.getElementById('reset-container').style.display = 'none';
             }
         }
 
