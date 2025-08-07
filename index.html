@@ -236,19 +236,6 @@
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
-        .completion-message {
-            background: rgba(76, 175, 80, 0.2);
-            border: 2px solid #4CAF50;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-            color: #4CAF50;
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: none;
-        }
-
         .beta-notice {
             background: rgba(255, 193, 7, 0.2);
             border: 2px solid #ffc107;
@@ -306,11 +293,6 @@
 
         <div class="dhikr-grid" id="dhikr-container">
             <!-- سيتم ملء الأذكار هنا بواسطة JavaScript -->
-        </div>
-
-        <div class="completion-message" id="completion-message">
-            🎉 مبروك! لقد أكملت جميع الأذكار بنجاح! 🎉<br>
-            جعلها الله في ميزان حسناتك
         </div>
 
         <div class="reset-container" id="reset-container">
@@ -804,15 +786,12 @@
             document.getElementById('progress-bar').style.width = percentage + '%';
             document.getElementById('progress-text').textContent = `${completedCount}/${totalCount} (${percentage}%)`;
             
-            // إظهار رسالة الإكمال وزر الإعادة عند إكمال جميع الأذكار
-            const completionMessage = document.getElementById('completion-message');
+            // إظهار زر الإعادة عند إكمال جميع الأذكار
             const resetContainer = document.getElementById('reset-container');
             
             if (completedCount === totalCount && totalCount > 0) {
-                completionMessage.style.display = 'block';
                 resetContainer.style.display = 'block';
             } else {
-                completionMessage.style.display = 'none';
                 resetContainer.style.display = 'none';
             }
         }
@@ -988,8 +967,7 @@
                 displayDhikr();
                 updateProgress();
                 
-                // إخفاء رسالة الإكمال وزر الإعادة
-                document.getElementById('completion-message').style.display = 'none';
+                // إخفاء زر الإعادة
                 document.getElementById('reset-container').style.display = 'none';
             }
         }
