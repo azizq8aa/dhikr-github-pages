@@ -837,9 +837,9 @@
                     <div class="dhikr-text">${dhikr.text}</div>
                     <div class="dhikr-source">${dhikr.source}</div>
                     <div class="dhikr-counter">
-                        <button class="counter-btn count-btn">${currentCount}/${dhikr.count}</button>
-                        <button class="counter-btn" onclick="incrementCounter(${index})">تسبيح</button>
-                        <button class="counter-btn reset-btn" onclick="resetCounter(${index})">إعادة</button>
+                        <button class="counter-btn" onclick="decrementCounter(${index})">-</button>
+                        <div class="counter-display">${currentCount}/${dhikr.count}</div>
+                        <button class="counter-btn" onclick="incrementCounter(${index})">+</button>
                     </div>
                 `;
                 
@@ -859,23 +859,27 @@
             if (dhikr.currentCount < dhikr.count) {
                 dhikr.currentCount++;
                 
-                if (dhikr.currentCount >= dhikr.count) {
+                if (dhikr.currentCount === dhikr.count) {
                     dhikr.completed = true;
                 }
                 
+                saveProgress();
                 displayDhikr();
             }
         }
 
-        // إعادة تعيين عداد ذكر واحد
-        function resetCounter(index) {
+        // تقليل العداد
+        function decrementCounter(index) {
             const currentDhikr = getCurrentDhikr();
             const dhikr = currentDhikr[index];
             
-            if (confirm('هل تريد إعادة تعيين هذا الذكر؟')) {
-                dhikr.currentCount = 0;
+            if (!dhikr.currentCount) dhikr.currentCount = 0;
+            
+            if (dhikr.currentCount > 0) {
+                dhikr.currentCount--;
                 dhikr.completed = false;
                 
+                saveProgress();
                 displayDhikr();
             }
         }
@@ -982,7 +986,8 @@
                     });
                 }
                 
-                // تحديث العرض
+                // حفظ التقدم وتحديث العرض
+                saveProgress();
                 displayDhikr();
                 updateProgress();
                 
@@ -1002,6 +1007,7 @@
         // تهيئة الصفحة
         function init() {
             updateVisitorCount();
+            loadProgress();
             loadReminderState();
             displayDhikr();
         }
