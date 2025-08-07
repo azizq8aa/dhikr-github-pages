@@ -180,18 +180,35 @@
         .counter-btn {
             background: rgba(255, 255, 255, 0.2);
             border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
             color: inherit;
+            margin: 0 5px;
+            font-weight: bold;
         }
 
         .counter-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            transform: scale(1.05);
+        }
+
+        .counter-btn.count-btn {
+            background: rgba(255, 255, 255, 0.15);
+            cursor: default;
+            font-size: 16px;
+            min-width: 80px;
+        }
+
+        .counter-btn.reset-btn {
+            background: rgba(255, 100, 100, 0.3);
+            font-size: 12px;
+        }
+
+        .counter-btn.reset-btn:hover {
+            background: rgba(255, 100, 100, 0.5);
         }
 
         .counter-display {
@@ -837,9 +854,9 @@
                     <div class="dhikr-text">${dhikr.text}</div>
                     <div class="dhikr-source">${dhikr.source}</div>
                     <div class="dhikr-counter">
-                        <button class="counter-btn" onclick="decrementCounter(${index})">-</button>
-                        <div class="counter-display">${currentCount}/${dhikr.count}</div>
-                        <button class="counter-btn" onclick="incrementCounter(${index})">+</button>
+                        <button class="counter-btn count-btn">${currentCount}/${dhikr.count}</button>
+                        <button class="counter-btn" onclick="incrementCounter(${index})">تسبيح</button>
+                        <button class="counter-btn reset-btn" onclick="resetCounter(${index})">إعادة</button>
                     </div>
                 `;
                 
@@ -868,15 +885,13 @@
             }
         }
 
-        // تقليل العداد
-        function decrementCounter(index) {
+        // إعادة تعيين عداد ذكر واحد
+        function resetCounter(index) {
             const currentDhikr = getCurrentDhikr();
             const dhikr = currentDhikr[index];
             
-            if (!dhikr.currentCount) dhikr.currentCount = 0;
-            
-            if (dhikr.currentCount > 0) {
-                dhikr.currentCount--;
+            if (confirm('هل تريد إعادة تعيين هذا الذكر؟')) {
+                dhikr.currentCount = 0;
                 dhikr.completed = false;
                 
                 saveProgress();
