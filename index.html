@@ -943,22 +943,25 @@
             
             if (!data || !counts) return;
             
-            let completed = 0;
-            let total = 0;
+            let completedDhikr = 0;
+            let totalDhikr = data.length;
             
+            // حساب عدد الأذكار المكتملة
             for (let i = 0; i < data.length; i++) {
-                total += data[i].count;
-                completed += Math.min(counts[i] || 0, data[i].count);
+                const currentCount = counts[i] || 0;
+                if (currentCount >= data[i].count) {
+                    completedDhikr++;
+                }
             }
             
-            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const percentage = totalDhikr > 0 ? Math.round((completedDhikr / totalDhikr) * 100) : 0;
             
-            document.getElementById('progress-text').textContent = `${completed}/${total} (${percentage}%)`;
+            document.getElementById('progress-text').textContent = `${completedDhikr}/${totalDhikr} (${percentage}%)`;
             document.getElementById('progress-fill').style.width = `${percentage}%`;
             
             // إظهار زر إعادة الكل إذا تم إكمال بعض الأذكار
             const resetBtn = document.getElementById('reset-all-btn');
-            if (completed > 0) {
+            if (completedDhikr > 0) {
                 resetBtn.style.display = 'block';
             } else {
                 resetBtn.style.display = 'none';
