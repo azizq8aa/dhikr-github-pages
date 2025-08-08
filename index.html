@@ -54,6 +54,10 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
+        .reminder-section {
+            margin-bottom: 20px;
+        }
+
         .reminder-btn {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
             color: white;
@@ -62,14 +66,26 @@
             border-radius: 25px;
             cursor: pointer;
             font-size: 1rem;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .reminder-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .reminder-btn.active {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .reminder-status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            min-height: 20px;
         }
 
         .nav-buttons {
@@ -246,11 +262,24 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        .visitor-count {
+        .footer-info {
             text-align: center;
-            margin-top: 30px;
-            font-size: 1.1rem;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .footer-info h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .footer-info p {
+            font-size: 0.9rem;
             opacity: 0.8;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
@@ -282,7 +311,10 @@
     <div class="container">
         <div class="header">
             <h1 id="page-title">أذكار الصباح</h1>
-            <button class="reminder-btn" onclick="enableReminder()">🔔 تفعيل التذكير</button>
+            <div class="reminder-section">
+                <button class="reminder-btn" id="reminder-btn" onclick="toggleReminder()">🔔 تفعيل التذكير</button>
+                <div class="reminder-status" id="reminder-status"></div>
+            </div>
             <div class="nav-buttons">
                 <button class="nav-btn active" onclick="showDhikr('morning')">أذكار الصباح</button>
                 <button class="nav-btn" onclick="showDhikr('evening')">أذكار المساء</button>
@@ -303,8 +335,9 @@
 
         <button class="reset-all-btn" id="reset-all-btn" onclick="resetAllDhikr()">🔄 إعادة الأذكار</button>
 
-        <div class="visitor-count">
-            عدد الزوار: <span id="visitor-count">1731</span>
+        <div class="footer-info">
+            <h3>🤲 بركة الأذكار</h3>
+            <p>اللهم اجعل هذا العمل خالصاً لوجهك الكريم، وانفع به المسلمين في كل مكان</p>
         </div>
     </div>
 
@@ -725,6 +758,8 @@
 
         let currentDhikr = 'morning';
         let currentCounts = {};
+        let reminderEnabled = false;
+        let reminderInterval = null;
 
         // تهيئة العدادات
         function initializeCounts() {
@@ -813,14 +848,16 @@
             }
         }
 
-        // إعادة تعيين عداد واحد (بدون رسالة تأكيد)
+        // إعادة تعيين عداد واحد
         function resetCounter(type, index) {
-            currentCounts[type][index] = 0;
-            updateCountDisplay(type, index);
-            updateProgress();
-            
-            const dhikrElement = document.getElementById(type + '-dhikr').children[index];
-            dhikrElement.classList.remove('completed');
+            if (confirm('هل تريد إعادة تعيين هذا الذكر؟')) {
+                currentCounts[type][index] = 0;
+                updateCountDisplay(type, index);
+                updateProgress();
+                
+                const dhikrElement = document.getElementById(type + '-dhikr').children[index];
+                dhikrElement.classList.remove('completed');
+            }
         }
 
         // تحديث عرض العداد
@@ -856,53 +893,91 @@
             }
         }
 
-        // إعادة تعيين جميع الأذكار (بدون رسالة تأكيد)
+        // إعادة تعيين جميع الأذكار
         function resetAllDhikr() {
-            const dhikrArray = currentDhikr === 'morning' ? morningDhikr : currentDhikr === 'evening' ? eveningDhikr : sleepDhikr;
-            
-            // إعادة تعيين جميع العدادات
-            currentCounts[currentDhikr] = dhikrArray.map(() => 0);
-            
-            // تحديث العرض
-            dhikrArray.forEach((dhikr, index) => {
-                updateCountDisplay(currentDhikr, index);
-                const dhikrElement = document.getElementById(currentDhikr + '-dhikr').children[index];
-                dhikrElement.classList.remove('completed');
-            });
-            
-            updateProgress();
+            if (confirm('هل تريد إعادة تعيين جميع الأذكار؟')) {
+                const dhikrArray = currentDhikr === 'morning' ? morningDhikr : currentDhikr === 'evening' ? eveningDhikr : sleepDhikr;
+                
+                // إعادة تعيين جميع العدادات
+                currentCounts[currentDhikr] = dhikrArray.map(() => 0);
+                
+                // تحديث العرض
+                dhikrArray.forEach((dhikr, index) => {
+                    updateCountDisplay(currentDhikr, index);
+                    const dhikrElement = document.getElementById(currentDhikr + '-dhikr').children[index];
+                    dhikrElement.classList.remove('completed');
+                });
+                
+                updateProgress();
+            }
         }
 
-        // تفعيل التذكير
-        function enableReminder() {
-            if ('Notification' in window) {
-                Notification.requestPermission().then(function (permission) {
-                    if (permission === 'granted') {
-                        alert('تم تفعيل التذكير بنجاح!');
-                        
-                        // تذكير كل 12 ساعة
-                        setInterval(() => {
-                            const now = new Date();
-                            const hour = now.getHours();
+        // تفعيل/إلغاء التذكير
+        function toggleReminder() {
+            const btn = document.getElementById('reminder-btn');
+            const status = document.getElementById('reminder-status');
+            
+            if (!reminderEnabled) {
+                if ('Notification' in window) {
+                    Notification.requestPermission().then(function (permission) {
+                        if (permission === 'granted') {
+                            reminderEnabled = true;
+                            btn.textContent = '🔕 إيقاف التذكير';
+                            btn.classList.add('active');
+                            status.textContent = 'تم تفعيل التذكير - سيتم تذكيرك في الساعة 6 صباحاً و 6 مساءً';
                             
-                            if (hour === 6) {
-                                new Notification('وقت أذكار الصباح', {
-                                    body: 'حان وقت أذكار الصباح',
-                                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌅</text></svg>'
-                                });
-                            } else if (hour === 18) {
-                                new Notification('وقت أذكار المساء', {
-                                    body: 'حان وقت أذكار المساء',
-                                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌙</text></svg>'
-                                });
-                            }
-                        }, 60000); // فحص كل دقيقة
-                    } else {
-                        alert('لم يتم تفعيل التذكير. يرجى السماح بالإشعارات.');
-                    }
-                });
+                            // فحص الوقت كل دقيقة
+                            reminderInterval = setInterval(checkReminderTime, 60000);
+                            
+                            // إشعار فوري للتأكيد
+                            new Notification('تم تفعيل التذكير', {
+                                body: 'سيتم تذكيرك بأذكار الصباح والمساء في أوقاتها',
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>'
+                            });
+                        } else {
+                            status.textContent = 'لم يتم السماح بالإشعارات. يرجى تفعيلها من إعدادات المتصفح.';
+                        }
+                    });
+                } else {
+                    status.textContent = 'متصفحك لا يدعم الإشعارات.';
+                }
             } else {
-                alert('متصفحك لا يدعم الإشعارات.');
+                reminderEnabled = false;
+                btn.textContent = '🔔 تفعيل التذكير';
+                btn.classList.remove('active');
+                status.textContent = 'تم إيقاف التذكير';
+                
+                if (reminderInterval) {
+                    clearInterval(reminderInterval);
+                    reminderInterval = null;
+                }
+            }
+        }
+
+        // فحص وقت التذكير
+        function checkReminderTime() {
+            if (!reminderEnabled) return;
+            
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            
+            // تذكير في الساعة 6:00 صباحاً
+            if (hour === 6 && minute === 0) {
+                new Notification('🌅 وقت أذكار الصباح', {
+                    body: 'حان وقت أذكار الصباح. بارك الله في يومك!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌅</text></svg>',
+                    requireInteraction: true
+                });
+            }
+            
+            // تذكير في الساعة 6:00 مساءً
+            if (hour === 18 && minute === 0) {
+                new Notification('🌙 وقت أذكار المساء', {
+                    body: 'حان وقت أذكار المساء. تقبل الله منك!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌙</text></svg>',
+                    requireInteraction: true
+                });
             }
         }
 
